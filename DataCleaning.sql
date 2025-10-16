@@ -1,15 +1,16 @@
-SELECT *
-FROM layoffs;
 -- Remove Duplicates
 -- Standardize the data
 -- Null values or blank values
 -- Remove any columns
+SELECT *
+FROM layoffs;
 
 CREATE TABLE layoffs_staging
 like layoffs;
 INSERT layoffs_staging
 SELECT * from layoffs;
 
+-- Remove Duplicates
 WITH DUPLIC AS (
 SELECT *,ROW_NUMBER() OVER(PARTITION BY company,location,industry,total_laid_off,percentage_laid_off,'date',stage,country,funds_raised_millions) as rn
 FROM layoffs_staging )
@@ -31,7 +32,8 @@ DROP COLUMN rn;
 DELETE
 FROM layoffs_staging2
 WHERE ri > 1;
--- standardizing
+
+-- Standardizing the data
 UPDATE layoffs_staging2
 set company=trim(company);
 
@@ -66,6 +68,7 @@ SET `date` =str_to_date(`date`,'%m/%d/%Y');
 ALTER table layoffs_staging2
 MODIFY COLUMN  `date` DATE;
 
+-- Removing Null values or blank values
 SELECT *
 FROM layoffs_staging2
 WHERE total_laid_off is null
@@ -89,6 +92,7 @@ SET t1.industry = t2.industry
 WHERE t1.industry is null
 and t2.industry is not null;
 
+-- Remove any unnecessary columns
 DELETE 
 FROM layoffs_staging2
 WHERE total_laid_off is null and percentage_laid_off is null;
